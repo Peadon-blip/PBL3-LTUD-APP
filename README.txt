@@ -7,3 +7,4 @@ Cài nodejs
 Cách chạy code. Bật 2 terminal:
 T1: cd D:\IT\HỌC\PBL3\PBL3-LTUD-APP\server\LTUDAPI >> dotnet run
 T2: cd D:\IT\HỌC\PBL3\PBL3-LTUD-APP\client >> npm run dev
+TEST

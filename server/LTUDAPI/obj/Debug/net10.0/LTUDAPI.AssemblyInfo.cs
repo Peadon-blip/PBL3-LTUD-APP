@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LTUDAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3694b26affcd2cf898f128ded7caed2af4b28959")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+363fc6bf03068ce8b8771f830e128f1004354dd4")]
 [assembly: System.Reflection.AssemblyProductAttribute("LTUDAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LTUDAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
