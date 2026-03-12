@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LTUDAPI.Data;
-using LTUDAPI.DTOs;
+using LTUDAPI.Models;
 
 namespace LTUDAPI.Controllers
 {
@@ -10,22 +10,25 @@ namespace LTUDAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
         public AuthController(ApplicationDbContext context) { _context = context; }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Tìm user dựa trên username và password_hash (trong thực tế nên dùng BCrypt)
+            // Tìm user trong DB (Trong SQLQuery2 bạn có pass là 'pass1', 'pass_sv'...)
             var account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Username == request.Username && a.PasswordHash == request.Password);
 
-            if (account == null) return Unauthorized("Tài khoản hoặc mật khẩu sai.");
+            if (account == null) return Unauthorized(new { message = "Sai tài khoản hoặc mật khẩu" });
+
+            // Lấy thông tin User (họ tên) để trả về cho Client
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.IdAcc == account.IdAcc);
 
             return Ok(new { 
-                IdAcc = account.IdAcc, 
-                Username = account.Username,
-                Role = account.IdRole 
+                idAcc = account.IdAcc, 
+                username = account.Username,
+                fullName = user?.HoTen ?? "Người dùng",
+                roleId = account.IdRole 
             });
         }
     }
