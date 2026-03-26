@@ -3,7 +3,7 @@
 ## Cấu trúc project
 ```
 StudentReminderApp/
-├── database_setup.sql          ← Chạy cái này trước
+├── database_setup.sql          ← Chạy cái này trước ở SQL Server
 └── StudentReminderApp/
     ├── StudentReminderApp.csproj
     ├── App.xaml / App.xaml.cs
@@ -38,12 +38,12 @@ Mở file `AppConfig.cs` và sửa:
 Ví dụ: `Server=DESKTOP-ABC123\SQLEXPRESS` hoặc `Server=localhost`
 
 ### Bước 3 — Mở project trong Visual Studio
-1. **Visual Studio 2022** → Open → Project/Solution
-2. Chọn file `StudentReminderApp.csproj`
+1. **Visual Studio 2022** → Open terminal tại file gốc có chứa file ở B2
+2. `StudentReminderApp.csproj`
 3. Chờ NuGet restore tự động (BCrypt.Net-Next + System.Data.SqlClient)
 
 ### Bước 4 — Build & Run
-- Nhấn **F5** hoặc **Ctrl+F5**
+- Tại terminal nhập **dotnet run**
 - Màn hình Login sẽ hiện ra
 - Nhấn "Đăng ký ngay" để tạo tài khoản đầu tiên
 
