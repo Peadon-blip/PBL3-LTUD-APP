@@ -1,11 +1,18 @@
 using System;
 using StudentReminderApp.ViewModels;
+using StudentReminderApp.Helpers; // Thêm cái này để lấy Session người dùng
 
 namespace StudentReminderApp.Models
 {
     public class Comment : BaseViewModel
     {
-        public long IdComment { get; set; }
+        private long _idComment;
+        public long IdComment 
+        { 
+            get => _idComment; 
+            set { _idComment = value; OnPropertyChanged(); } 
+        }
+
         public long IdAcc { get; set; }
         public long IdPost { get; set; }
         public string Content { get; set; }
@@ -16,6 +23,17 @@ namespace StudentReminderApp.Models
         {
             get => _authorName;
             set { _authorName = value; OnPropertyChanged(); }
+        }
+
+        // --- THÊM LOGIC KIỂM TRA QUYỀN XÓA ---
+        // Thuộc tính này giúp UI (XAML) biết có nên hiện nút xóa hay không
+        public bool IsMyComment
+        {
+            get
+            {
+                if (SessionManager.CurrentUser == null) return false;
+                return IdAcc == SessionManager.CurrentUser.IdAcc;
+            }
         }
 
         public string TimeDisplay

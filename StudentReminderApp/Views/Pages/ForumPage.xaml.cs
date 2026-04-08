@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using StudentReminderApp.Views.Dialogs;
 using StudentReminderApp.ViewModels;
 using StudentReminderApp.Models;
+using System.Diagnostics;
+using System.Windows.Documents;
 
 namespace StudentReminderApp.Views.Pages
 {
@@ -14,12 +16,18 @@ namespace StudentReminderApp.Views.Pages
             InitializeComponent();
         }
 
-        private void OpenCreatePost_Click(object sender, RoutedEventArgs e) 
+        /// Mở cửa sổ tạo bài viết mới
+        private void OpenCreatePost_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var popup = new CreatePostDialog();
-                if (this.DataContext != null) popup.DataContext = this.DataContext;
+
+                if (this.DataContext is ForumViewModel vm)
+                {
+                    popup.DataContext = vm;
+                    vm.CloseAction = () => popup.Close();
+                }
 
                 var parentWindow = Window.GetWindow(this);
                 if (parentWindow != null) popup.Owner = parentWindow;
@@ -28,10 +36,12 @@ namespace StudentReminderApp.Views.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi: " + ex.Message);
+                MessageBox.Show("Lỗi khi mở cửa sổ đăng bài: " + ex.Message);
             }
         }
-        // Chức năng: Mở cửa sổ Bình luận
+
+        /// Chức năng: Mở cửa sổ Bình luận
+ 
         private void CommentButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is Post post)
@@ -42,7 +52,8 @@ namespace StudentReminderApp.Views.Pages
             }
         }
 
-        // Chức năng: Chia sẻ bài viết 
+        /// Chức năng: Chia sẻ bài viết
+  
         private async void ShareButton_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -52,15 +63,11 @@ namespace StudentReminderApp.Views.Pages
             {
                 try
                 {
-                    // 2. Mở Dialog chia sẻ
                     var shareDialog = new ShareDialog(post);
                     shareDialog.Owner = Window.GetWindow(this);
 
-                    // 3. Chờ người dùng thực hiện thao tác trong Dialog
                     bool? result = shareDialog.ShowDialog();
 
-                    // Nếu chia sẻ thành công (DialogResult = true)
-                    // Gọi hàm Load lại dữ liệu từ ViewModel để hiện bài viết mới ngay lập tức
                     if (result == true)
                     {
                         if (this.DataContext is ForumViewModel vm)
@@ -76,7 +83,8 @@ namespace StudentReminderApp.Views.Pages
             }
         }
 
-        // Chức năng: Xử lý nút Option nếu có Context Menu
+        /// Chức năng: Xử lý nút Option nếu có Context Menu
+
         private void OptionButton_Click(object sender, RoutedEventArgs e)
         {
             Button btn = sender as Button;

@@ -1,6 +1,7 @@
 using System.Windows;
 using StudentReminderApp.Models;
 using StudentReminderApp.ViewModels;
+using System.Windows.Controls;
 
 namespace StudentReminderApp.Views.Dialogs
 {

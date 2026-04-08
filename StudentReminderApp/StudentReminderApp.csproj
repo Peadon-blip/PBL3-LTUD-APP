@@ -19,7 +19,9 @@
     <Resource Include="Resources\Styles.xaml"/>
     <Resource Include="Resources\Images\APUIp.jpg" />
     <Resource Include="Resources\Images\user.png" />
-    <Resource Include="Resources\Fonts\FontAwesome7Solid.otf" />
+    <Resource Include="Resources\Icons\image-gallery.png" />
+    <Resource Include="Resources\Icons\smiling-face.png" />
+    <Resource Include="Resources\Icons\rgb.png" />
     
     <Page Update="Views\Pages\ForumPage.xaml">
       <Generator>MSBuild:Compile</Generator>
