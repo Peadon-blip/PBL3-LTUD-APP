@@ -319,6 +319,39 @@ CREATE TABLE YEU_THICH (
     CONSTRAINT UC_User_Post UNIQUE (id_acc, id_bai_viet) 
 );
 
+USE PBL3;
+GO
+
+UPDATE BAI_VIET
+SET so_luot_thich = (
+    SELECT COUNT(*) 
+    FROM YEU_THICH 
+    WHERE YEU_THICH.id_bai_viet = BAI_VIET.id_bai_viet
+);
+GO
+
+-- Tạo mới trigger
+CREATE TRIGGER TRG_UpdateLikeCount
+ON YEU_THICH
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Cập nhật cho những bài viết vừa được INSERT like
+    UPDATE BAI_VIET
+    SET so_luot_thich = (SELECT COUNT(*) FROM YEU_THICH WHERE id_bai_viet = b.id_bai_viet)
+    FROM BAI_VIET b
+    INNER JOIN inserted i ON b.id_bai_viet = i.id_bai_viet;
+
+    -- Cập nhật cho những bài viết vừa bị DELETE like (Unlike)
+    UPDATE BAI_VIET
+    SET so_luot_thich = (SELECT COUNT(*) FROM YEU_THICH WHERE id_bai_viet = b.id_bai_viet)
+    FROM BAI_VIET b
+    INNER JOIN deleted d ON b.id_bai_viet = d.id_bai_viet;
+END;
+GO
+
 -- BINH_LUAN
 CREATE TABLE BINH_LUAN (
     id_binh_luan BIGINT PRIMARY KEY IDENTITY(1,1),
