@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Threading.Tasks;
 using StudentReminderApp.BLL;
 using StudentReminderApp.Helpers;
 using StudentReminderApp.Models;
@@ -10,52 +10,104 @@ namespace StudentReminderApp.Views.Pages
 {
     public partial class CoursePage : Page
     {
-        private readonly CourseBLL _bll = new CourseBLL();
-        private List<LopHocPhan>   _allCourses;
+        private readonly CourseBLL _courseBll = new CourseBLL();
 
-        public CoursePage() { InitializeComponent(); Loaded += (s, e) => LoadData(); }
-
-        private void LoadData()
+        public CoursePage()
         {
-            int    hk = CmbHocKy.SelectedIndex + 1;
-            string nh = TxtNamHoc.Text.Trim();
-            _allCourses           = _bll.GetAvailable(hk, nh, SessionManager.CurrentAccount.IdAcc);
-            DgCourses.ItemsSource = _allCourses;
+            InitializeComponent();
+            Loaded += CoursePage_Loaded;
         }
 
-        private void Filter_Changed(object sender, System.Windows.RoutedEventArgs e)
+        private async void CoursePage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_allCourses == null) return;
-            string q = TxtSearch.Text.ToLower();
-            DgCourses.ItemsSource = string.IsNullOrWhiteSpace(q)
-                ? _allCourses
-                : _allCourses.Where(c =>
-                    c.TenMonHoc.ToLower().Contains(q)    ||
-                    c.TenGiangVien.ToLower().Contains(q) ||
-                    c.MaMonHoc.ToLower().Contains(q)).ToList();
+            await LoadDataAsync();
         }
 
-        private void BtnReload_Click(object sender, RoutedEventArgs e) => LoadData();
-
-        private void BtnRegister_Click(object sender, RoutedEventArgs e)
+        private async void BtnLoadCourses_Click(object sender, RoutedEventArgs e)
         {
-            var lhp = (LopHocPhan)((Button)sender).Tag;
-            if (lhp.DaDangKy)
+            await LoadDataAsync();
+        }
+
+        private bool _isLoading = false;
+
+        private async Task LoadDataAsync()
+        {
+            if (!SessionManager.IsLoggedIn || _isLoading) return;
+            _isLoading = true;
+            LoadingOverlay.Visibility = Visibility.Visible;
+
+            try
             {
-                _bll.Unregister(SessionManager.CurrentAccount.IdAcc, lhp.IdLopHp);
-                lhp.DaDangKy = false;
+                int hocKy = CmbHocKy.SelectedIndex + 1;
+                string namHoc = ((ComboBoxItem)CmbNamHoc.SelectedItem).Content.ToString();
+                long idSv = SessionManager.CurrentUser.IdAcc; // Đồng bộ dùng CurrentUser
+
+                // Đẩy hoàn toàn tác vụ nặng sang luồng nền để giải phóng UI
+                var courses = await Task.Run(() => _courseBll.GetAvailableAsync(hocKy, namHoc, idSv));
+                DgCourses.ItemsSource = courses;
             }
-            else
+            catch (Exception ex)
             {
-                var (ok, msg) = _bll.Register(SessionManager.CurrentAccount.IdAcc, lhp.IdLopHp);
-                if (!ok)
+                MessageBox.Show("Lỗi tải danh sách lớp học phần: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                _isLoading = false;
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void BtnRegister_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is LopHocPhan lhp)
+            {
+                btn.IsEnabled = false; // Ngăn người dùng click đúp liên tục
+                try
                 {
-                    MessageBox.Show(msg, "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    long idSv = SessionManager.CurrentUser.IdAcc;
+                    var (ok, msg) = await Task.Run(() => _courseBll.RegisterAsync(idSv, lhp.IdLopHp));
+
+                    if (ok)
+                        MessageBox.Show(msg, "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    else
+                        MessageBox.Show(msg, "Thất bại", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                    await LoadDataAsync(); // Cập nhật lại danh sách (để đổi nút Đăng ký thành Hủy)
                 }
-                lhp.DaDangKy = true;
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi đăng ký: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    btn.IsEnabled = true;
+                }
             }
-            DgCourses.Items.Refresh();
+        }
+
+        private async void BtnUnregister_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is LopHocPhan lhp)
+            {
+                if (MessageBox.Show($"Bạn có chắc chắn muốn hủy đăng ký lớp {lhp.TenMonHoc}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    btn.IsEnabled = false;
+                    try
+                    {
+                        long idSv = SessionManager.CurrentUser.IdAcc;
+                        await Task.Run(() => _courseBll.UnregisterAsync(idSv, lhp.IdLopHp));
+                        await LoadDataAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi khi hủy: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    finally
+                    {
+                        btn.IsEnabled = true;
+                    }
+                }
+            }
         }
     }
 }
