@@ -50,16 +50,16 @@ namespace StudentReminderApp.Views.Pages
                     await _advisorBll.UpdateManualStatsAsync(idSv, gpa, cred);
                 }
 
-                // Chạy 3 tác vụ DB song song trên luồng nền để chia 3 thời gian tải
-                var summaryTask = Task.Run(() => _advisorBll.GetSummaryAsync(idSv, hocKy, namHoc));
-                var suggestedTask = Task.Run(() => _advisorBll.GetSuggestedCoursesAsync(idSv, hocKy, namHoc));
-                var registeredTask = Task.Run(() => _advisorBll.GetRegisteredCoursesAsync(idSv, hocKy, namHoc));
+                // Gọi trực tiếp các hàm Async để chạy song song (không bọc Task.Run để tránh lỗi Task<Task<T>>)
+                var summaryTask = _advisorBll.GetSummaryAsync(idSv, hocKy, namHoc);
+                var suggestedTask = _advisorBll.GetSuggestedCoursesAsync(idSv, hocKy, namHoc);
+                var registeredTask = _advisorBll.GetRegisteredCoursesAsync(idSv, hocKy, namHoc);
 
                 await Task.WhenAll(summaryTask, suggestedTask, registeredTask);
 
-                var summary = summaryTask.Result;
-                var suggestedCourses = suggestedTask.Result;
-                var registeredCourses = registeredTask.Result;
+                var summary = await summaryTask;
+                var suggestedCourses = await suggestedTask;
+                var registeredCourses = await registeredTask;
 
                 TxtAccCredit.Text = summary.TotalAccumulatedCredits.ToString();
                 TxtRegCredit.Text = summary.RegisteredCreditsThisTerm.ToString();
@@ -141,7 +141,7 @@ namespace StudentReminderApp.Views.Pages
                 try
                 {
                     long idSv = SessionManager.CurrentUser.IdAcc;
-                    var (ok, msg) = await Task.Run(() => _courseBll.RegisterAsync(idSv, lhp.IdLopHp)); // Giờ sẽ không lỗi nữa
+                    var (ok, msg) = await _courseBll.RegisterAsync(idSv, lhp.IdLopHp);
 
                     if (ok)
                     {

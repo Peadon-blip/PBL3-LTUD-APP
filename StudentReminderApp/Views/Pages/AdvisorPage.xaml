@@ -279,7 +279,7 @@
                                   FontSize="12.5">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Mã MH"
-                                                    Binding="{Binding MaMonHocDisplay}"
+                                                    Binding="{Binding MaMonHoc}"
                                                     Width="85"/>
                                 <DataGridTextColumn Header="Tên môn học"
                                                     Binding="{Binding TenMonHoc}"
