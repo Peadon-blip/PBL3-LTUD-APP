@@ -352,6 +352,40 @@ BEGIN
 END;
 GO
 
+ALTER TABLE BAI_VIET ADD so_luot_binh_luan INT DEFAULT 0;
+ALTER TABLE BAI_VIET ADD so_luot_chia_se INT DEFAULT 0;
+GO
+
+CREATE TRIGGER TRG_UpdateCommentCount
+ON BINH_LUAN
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Khi thêm bình luận
+    UPDATE BAI_VIET SET so_luot_binh_luan = (SELECT COUNT(*) FROM BINH_LUAN WHERE id_bai_viet = b.id_bai_viet)
+    FROM BAI_VIET b INNER JOIN inserted i ON b.id_bai_viet = i.id_bai_viet;
+    -- Khi xóa bình luận
+    UPDATE BAI_VIET SET so_luot_binh_luan = (SELECT COUNT(*) FROM BINH_LUAN WHERE id_bai_viet = b.id_bai_viet)
+    FROM BAI_VIET b INNER JOIN deleted d ON b.id_bai_viet = d.id_bai_viet;
+END;
+GO
+
+CREATE TRIGGER TRG_UpdateShareCount
+ON BAI_VIET
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Cập nhật cho bài viết GỐC khi có bài viết con tham chiếu tới nó
+    UPDATE BAI_VIET SET so_luot_chia_se = (SELECT COUNT(*) FROM BAI_VIET WHERE IdPostGoc = b.id_bai_viet)
+    FROM BAI_VIET b INNER JOIN inserted i ON b.id_bai_viet = i.IdPostGoc;
+    
+    UPDATE BAI_VIET SET so_luot_chia_se = (SELECT COUNT(*) FROM BAI_VIET WHERE IdPostGoc = b.id_bai_viet)
+    FROM BAI_VIET b INNER JOIN deleted d ON b.id_bai_viet = d.IdPostGoc;
+END;
+GO
+
 -- BINH_LUAN
 CREATE TABLE BINH_LUAN (
     id_binh_luan BIGINT PRIMARY KEY IDENTITY(1,1),
