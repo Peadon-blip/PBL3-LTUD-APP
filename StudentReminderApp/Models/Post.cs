@@ -20,6 +20,45 @@ namespace StudentReminderApp.Models
         public string AuthorAvatar { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;
 
+        // --- Cập nhật ngay lập tức nhờ OnPropertyChanged ---
+
+        private int _likes;
+        public int Likes
+        {
+            get => _likes;
+            set { _likes = value; OnPropertyChanged(); }
+        }
+
+        private bool _isLiked;
+        public bool IsLiked
+        {
+            get => _isLiked;
+            set { _isLiked = value; OnPropertyChanged(); }
+        }
+
+        private int _commentCount;
+        public int CommentCount
+        {
+            get => _commentCount;
+            set 
+            { 
+                _commentCount = value; 
+                OnPropertyChanged(); // Tự động lấy tên property là CommentCount
+            }
+        }
+
+        private int _shareCount;
+        public int ShareCount
+        {
+            get => _shareCount;
+            set 
+            { 
+                _shareCount = value; 
+                OnPropertyChanged(); 
+            }
+        }
+
+        // --- Xử lý hình ảnh và File ---
         private List<string> _filePaths = new List<string>();
         public List<string> FilePaths
         {
@@ -45,6 +84,7 @@ namespace StudentReminderApp.Models
             }
         }
 
+        // --- Hiển thị giao diện ---
         private string _backgroundColor = "Transparent";
         public string BackgroundColor
         {
@@ -63,7 +103,6 @@ namespace StudentReminderApp.Models
                                  BackgroundColor.ToLower() != "#ffffffff";
 
         public string PostForeground => IsColored ? "White" : "#050505";
-
         public bool IsShared => IdOriginalPost.HasValue && IdOriginalPost.Value > 0;
 
         private Post? _originalPost;
@@ -86,31 +125,9 @@ namespace StudentReminderApp.Models
         }
 
         public string PrivacyIcon => IsPublic ? "🌎" : "🔒";
-
-        private int _likes;
-        public int Likes
-        {
-            get => _likes;
-            set { _likes = value; OnPropertyChanged(); }
-        }
-
-        private bool _isLiked;
-        public bool IsLiked
-        {
-            get => _isLiked;
-            set { _isLiked = value; OnPropertyChanged(); }
-        }
-
         public bool IsMyPost => SessionManager.CurrentUser != null && IdAcc == SessionManager.CurrentUser.IdAcc;
 
-        public string DisplayName
-        {
-            get
-            {
-                if (IsAnonymous) return "Người dùng ẩn danh";
-                return string.IsNullOrWhiteSpace(AuthorName) ? "Thành viên" : AuthorName;
-            }
-        }
+        public string DisplayName => IsAnonymous ? "Người dùng ẩn danh" : (string.IsNullOrWhiteSpace(AuthorName) ? "Thành viên" : AuthorName);
 
         public string DisplayAvatar
         {

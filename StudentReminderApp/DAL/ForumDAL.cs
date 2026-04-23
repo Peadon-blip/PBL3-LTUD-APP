@@ -18,6 +18,8 @@ namespace StudentReminderApp.DAL
             const string sql = @"
             SELECT bv.*, u.ho_ten,
             (SELECT COUNT(*) FROM YEU_THICH WHERE id_bai_viet = bv.id_bai_viet) as TotalLikes,
+            (SELECT COUNT(*) FROM BINH_LUAN WHERE id_bai_viet = bv.id_bai_viet) as TotalComments,
+            (SELECT COUNT(*) FROM BAI_VIET WHERE IdPostGoc = bv.id_bai_viet) as TotalShares,
             CASE 
                 WHEN EXISTS (SELECT 1 FROM YEU_THICH WHERE id_bai_viet = bv.id_bai_viet AND id_acc = @currentUserId) 
                 THEN 1 ELSE 0 
@@ -48,7 +50,9 @@ namespace StudentReminderApp.DAL
                                     Content = r["noi_dung"]?.ToString() ?? "",
                                     BackgroundColor = r["background_color"] != DBNull.Value ? r["background_color"].ToString() : "Transparent",
                                     CreatedAt = Convert.ToDateTime(r["ngay_dang"]),
-                                    Likes = Convert.ToInt32(r["TotalLikes"]),
+                                    Likes = r["so_luot_thich"] != DBNull.Value ? Convert.ToInt32(r["so_luot_thich"]) : 0,
+                                    CommentCount = r["so_luot_binh_luan"] != DBNull.Value ? Convert.ToInt32(r["so_luot_binh_luan"]) : 0,
+                                    ShareCount = r["so_luot_chia_se"] != DBNull.Value ? Convert.ToInt32(r["so_luot_chia_se"]) : 0,
                                     IsLiked = Convert.ToBoolean(r["IsLikedByMe"]),
                                     IsAnonymous = r["is_anonymous"] != DBNull.Value && Convert.ToBoolean(r["is_anonymous"]),
                                     AuthorName = r["ho_ten"]?.ToString() ?? "",
